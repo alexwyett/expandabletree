@@ -1,0 +1,127 @@
+<?php
+
+
+/**
+ * @implements hook_menu()
+ * 
+ * @return array
+ */
+function expandabletree_menu()
+{
+    $items = array();
+    
+    $items['admin/config/expandabletree'] = array(
+        'title' => 'Expandable Tree',
+        'description' => 'Provides administration links for the expandable tree module.',
+        'page callback' => 'system_admin_menu_block_page',
+        'access arguments' => array('expandabletree'),
+        'file' => 'system.admin.inc',
+        'file path' => drupal_get_path('module', 'system')
+    );
+        $items['admin/config/expandabletree/configure'] = array(
+            'title' => 'Expandable tree',
+            'description' => 'The expandable tree form.',
+            'page callback' => 'drupal_get_form',
+            'page arguments' => array('expandabletree_config_form'),
+            'access arguments' => array('expandabletree'),
+            'file' => 'expandabletree.admin.inc',
+            'file path' => drupal_get_path('module', 'expandabletree')
+        );
+    
+    return $items;
+}
+
+
+/**
+ * Implements hook_permission()
+ * 
+ * @return array
+ */
+function expandabletree_permission()
+{
+    return array(
+        'expandabletree' => array(
+            'title' => 'Expandable Tree',
+            'description' => t(
+                'Allow access the the Expandable Tree example form.'
+            )
+        )
+    );
+}
+
+
+/**
+ * Implements hook_theme().
+ */
+function expandabletree_theme($existing, $type, $theme, $path)
+{
+    $themes = array(
+        'expandabletree' => array(
+            'render element' => 'element'
+        ),
+    );
+    
+    return $themes;
+}
+
+/**
+ * Form themer
+ * 
+ * @param array $vars 
+ * 
+ * @return string
+ */
+function theme_expandabletree($vars)
+{
+    $element = $vars['element'];
+    drupal_add_tabledrag(
+        'expandabletree-table',
+        'order',
+        'sibling',
+        'item-row-weight'
+    );
+
+    $header = array(
+        'field' => t('Example field'),
+        'remove_item' => t('Options'),
+        'weight' => t('Weight')
+    );
+
+    $rows = array();
+    foreach (element_children($element) as $key) {
+        $row = array();
+        $row['data'] = array();
+        foreach ($header as $fieldname => $title) {
+            $row['data'][] = drupal_render($element[$key][$fieldname]);
+            $row['class'] = array('draggable');
+        }
+        $rows[] = $row;
+    }
+
+    return theme(
+        'table',
+        array(
+            'header' => $header, 
+            'rows' => $rows,
+            'attributes' => array(
+                'id' => 'expandabletree-table'
+            ),
+            'empty' => 'No options found'
+        )
+    );
+}
+
+/**
+ * Return the config form values in weight sorted order
+ * 
+ * @return array
+ */
+function expandabletree_get_elements()
+{
+    $defaults = variable_get('expandabletree_elements', array());
+    uasort($defaults, function($a, $b) {
+        return $a['weight'] > $b['weight'];
+    });
+    
+    return $defaults;
+}

@@ -1,0 +1,6 @@
+name = Expandable tree example
+description = Example drupal module demonstrating how to add 'Add another' buttons to a #tree based form field.
+core = 7.x
+version = "7.x-0.x-dev"
+package = Expandable Tree
+configure = admin/config/expandabletree
